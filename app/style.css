@@ -1434,6 +1434,172 @@ footer::before {
     color: #fff;
 }
 
+.cart-payment {
+    margin-top: 16px;
+    border-top: 1px solid #ececec;
+    padding-top: 14px;
+}
+
+.cart-payment h4 {
+    font-size: 18px;
+    color: #0f1720;
+    margin-bottom: 6px;
+}
+
+.cart-payment-subtitle {
+    color: #5f5f5f;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.cart-payment-email {
+    width: 100%;
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 13px;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+}
+
+.cart-payment-email:focus {
+    outline: 2px solid rgba(254, 94, 19, 0.25);
+    border-color: #fe5e13;
+}
+
+.cart-payment-methods {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.cart-payment-option {
+    border: 1px solid #d7d7d7;
+    background: #fff;
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 12px;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cart-payment-option:hover,
+.cart-payment-option.active {
+    border-color: #fe5e13;
+    color: #fe5e13;
+    background: #fff4ee;
+}
+
+.cart-card-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cart-card-form input,
+.cart-pix-code {
+    width: 100%;
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 13px;
+    color: #1a1a1a;
+}
+
+.cart-card-form input:focus,
+.cart-pix-code:focus {
+    outline: 2px solid rgba(254, 94, 19, 0.25);
+    border-color: #fe5e13;
+}
+
+.cart-card-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.cart-pay-button {
+    border: none;
+    background: #fe5e13;
+    color: #fff;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.cart-pay-button:hover {
+    background: #df4f0f;
+}
+
+.cart-pay-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.cart-pix-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cart-pix-box p {
+    font-size: 14px;
+    color: #292929;
+}
+
+.cart-pix-code {
+    min-height: 78px;
+    resize: vertical;
+}
+
+.cart-pix-qr {
+    width: 170px;
+    height: 170px;
+    border: 1px solid #ececec;
+    border-radius: 8px;
+    padding: 6px;
+    background: #fff;
+}
+
+.cart-pix-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.cart-pix-copy,
+.cart-pix-confirm {
+    border: none;
+    border-radius: 8px;
+    padding: 9px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cart-pix-copy {
+    background: #1f2937;
+    color: #fff;
+}
+
+.cart-pix-confirm {
+    background: #16a34a;
+    color: #fff;
+}
+
+.cart-payment-message {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #0f1720;
+    background: #f6f6f6;
+    border-radius: 8px;
+    padding: 8px;
+}
+
 
 /* ===========================
    RESPONSIVIDADE – MOBILE
@@ -1508,6 +1674,27 @@ footer::before {
         position: static;
         transform: none;
         margin: 15px auto;
+    }
+
+    .cart-modal-content {
+        width: min(94%, 520px);
+        margin: 40px auto;
+        max-height: 88vh;
+    }
+
+    .cart-item-details {
+        flex-wrap: wrap;
+        row-gap: 6px;
+    }
+
+    .cart-payment-methods {
+        grid-template-columns: 1fr;
+    }
+
+    .cart-card-row,
+    .cart-pix-actions {
+        grid-template-columns: 1fr;
+        display: grid;
     }
 
     ul a {

@@ -20,6 +20,19 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Pagamento com Mercado Pago (sandbox)
+
+1. Crie o arquivo `.env.local` na raiz com base no `.env.example`.
+2. Defina `MP_ACCESS_TOKEN` com seu token de teste do Mercado Pago.
+3. Reinicie o servidor (`npm run dev`).
+
+Fluxo implementado no carrinho:
+- `Cartao de credito`: abre checkout seguro do Mercado Pago com filtro para credito.
+- `Cartao de debito`: abre checkout seguro do Mercado Pago com filtro para debito.
+- `Pix`: gera codigo Pix (copia e cola) e QR code com o valor total da compra.
+
+Observacao: para testes completos, use contas e dados de teste do proprio Mercado Pago.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

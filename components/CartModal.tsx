@@ -8,15 +8,130 @@ function formatBRL(value: number) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 }
 
+type PaymentMethod = 'credit' | 'debit' | 'pix';
+
 export default function CartModal() {
   const { items, totalItems, totalPrice, removeItem, clearCart, isOpen, closeCart } = useCart();
   const [confirmClear, setConfirmClear] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('credit');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [cardName, setCardName] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvv, setCardCvv] = useState('');
+  const [pixCode, setPixCode] = useState('');
+  const [pixQrBase64, setPixQrBase64] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentMessage, setPaymentMessage] = useState('');
 
   if (!isOpen) return null;
 
   function handleClear() {
     clearCart();
     setConfirmClear(false);
+    setPixCode('');
+    setPixQrBase64('');
+    setPaymentMessage('');
+  }
+
+  function validateEmail() {
+    if (!customerEmail || !customerEmail.includes('@')) {
+      setPaymentMessage('Informe um e-mail valido para processar o pagamento.');
+      return false;
+    }
+
+    return true;
+  }
+
+  async function createCheckout(method: PaymentMethod) {
+    if (!validateEmail()) return null;
+
+    setIsProcessing(true);
+    setPaymentMessage('Processando pagamento...');
+
+    try {
+      const response = await fetch('/api/payments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          method,
+          email: customerEmail,
+          totalPrice,
+          items: items.map((item) => ({
+            id: item.id,
+            name: item.name,
+            quantity: item.quantity,
+            unitPrice: item.price,
+          })),
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || 'Nao foi possivel iniciar o pagamento.');
+      }
+
+      setPaymentMessage('');
+      return data;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Falha no pagamento.';
+      setPaymentMessage(message);
+      return null;
+    } finally {
+      setIsProcessing(false);
+    }
+  }
+
+  async function copyPixCode() {
+    if (!pixCode) return;
+    try {
+      await navigator.clipboard.writeText(pixCode);
+      setPaymentMessage('Codigo Pix copiado para a area de transferencia.');
+    } catch {
+      setPaymentMessage('Nao foi possivel copiar automaticamente. Copie manualmente o codigo.');
+    }
+  }
+
+  async function processCardPayment() {
+    if (!cardName || cardNumber.replace(/\D/g, '').length < 13 || !cardExpiry || cardCvv.length < 3) {
+      setPaymentMessage('Preencha corretamente os dados do cartao para finalizar o pagamento.');
+      return;
+    }
+
+    const data = await createCheckout(paymentMethod);
+    if (!data?.checkoutUrl) return;
+
+    window.open(data.checkoutUrl, '_blank', 'noopener,noreferrer');
+    const cardTypeLabel = paymentMethod === 'credit' ? 'credito' : 'debito';
+    setPaymentMessage(`Abrimos o checkout seguro do Mercado Pago para cartao de ${cardTypeLabel}.`);
+  }
+
+  async function generatePixPayment() {
+    if (totalPrice <= 0) {
+      setPaymentMessage('Adicione itens no carrinho para gerar o codigo Pix.');
+      return;
+    }
+
+    const data = await createCheckout('pix');
+    if (!data?.qrCode) return;
+
+    setPixCode(data.qrCode);
+    setPixQrBase64(data.qrCodeBase64 || '');
+    setPaymentMessage('Codigo Pix gerado com o valor total da compra.');
+  }
+
+  function completePixPayment() {
+    if (!pixCode) {
+      setPaymentMessage('Gere primeiro o codigo Pix para concluir o pagamento.');
+      return;
+    }
+
+    setPaymentMessage('Pagamento via Pix confirmado. Pedido finalizado com sucesso.');
+    clearCart();
+    setPixCode('');
+    setPixQrBase64('');
   }
 
   return (
@@ -108,6 +223,122 @@ export default function CartModal() {
               >
                 Limpar carrinho
               </button>
+            </div>
+
+            <div className="cart-payment">
+              <h4>Pagamento direto no site</h4>
+              <p className="cart-payment-subtitle">Escolha uma forma para concluir o pedido.</p>
+              <input
+                type="email"
+                className="cart-payment-email"
+                placeholder="Seu e-mail para pagamento"
+                value={customerEmail}
+                onChange={(e) => setCustomerEmail(e.target.value)}
+              />
+
+              <div className="cart-payment-methods" role="radiogroup" aria-label="Forma de pagamento">
+                <button
+                  type="button"
+                  className={`cart-payment-option${paymentMethod === 'credit' ? ' active' : ''}`}
+                  onClick={() => {
+                    setPaymentMethod('credit');
+                    setPaymentMessage('');
+                    setPixCode('');
+                    setPixQrBase64('');
+                  }}
+                >
+                  Cartao de credito
+                </button>
+                <button
+                  type="button"
+                  className={`cart-payment-option${paymentMethod === 'debit' ? ' active' : ''}`}
+                  onClick={() => {
+                    setPaymentMethod('debit');
+                    setPaymentMessage('');
+                    setPixCode('');
+                    setPixQrBase64('');
+                  }}
+                >
+                  Cartao de debito
+                </button>
+                <button
+                  type="button"
+                  className={`cart-payment-option${paymentMethod === 'pix' ? ' active' : ''}`}
+                  onClick={() => {
+                    setPaymentMethod('pix');
+                    setPaymentMessage('');
+                  }}
+                >
+                  Pix
+                </button>
+              </div>
+
+              {(paymentMethod === 'credit' || paymentMethod === 'debit') && (
+                <div className="cart-card-form">
+                  <input
+                    type="text"
+                    placeholder="Nome impresso no cartao"
+                    value={cardName}
+                    onChange={(e) => setCardName(e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Numero do cartao"
+                    value={cardNumber}
+                    onChange={(e) => setCardNumber(e.target.value)}
+                    inputMode="numeric"
+                  />
+                  <div className="cart-card-row">
+                    <input
+                      type="text"
+                      placeholder="Validade (MM/AA)"
+                      value={cardExpiry}
+                      onChange={(e) => setCardExpiry(e.target.value)}
+                    />
+                    <input
+                      type="password"
+                      placeholder="CVV"
+                      value={cardCvv}
+                      onChange={(e) => setCardCvv(e.target.value)}
+                      inputMode="numeric"
+                    />
+                  </div>
+                  <button type="button" className="cart-pay-button" onClick={processCardPayment} disabled={isProcessing}>
+                    {isProcessing ? 'Processando...' : `Pagar ${formatBRL(totalPrice)}`}
+                  </button>
+                </div>
+              )}
+
+              {paymentMethod === 'pix' && (
+                <div className="cart-pix-box">
+                  <p>Valor do Pix: <strong>{formatBRL(totalPrice)}</strong></p>
+                  <button type="button" className="cart-pay-button" onClick={generatePixPayment} disabled={isProcessing}>
+                    {isProcessing ? 'Gerando...' : 'Gerar codigo Pix'}
+                  </button>
+                  {pixCode && (
+                    <>
+                      {pixQrBase64 && (
+                        <img
+                          className="cart-pix-qr"
+                          src={`data:image/png;base64,${pixQrBase64}`}
+                          alt="QR code Pix"
+                        />
+                      )}
+                      <textarea readOnly value={pixCode} className="cart-pix-code" />
+                      <div className="cart-pix-actions">
+                        <button type="button" className="cart-pix-copy" onClick={copyPixCode}>
+                          Copiar codigo
+                        </button>
+                        <button type="button" className="cart-pix-confirm" onClick={completePixPayment}>
+                          Confirmar pagamento
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {paymentMessage && <p className="cart-payment-message">{paymentMessage}</p>}
             </div>
           </>
         )}
