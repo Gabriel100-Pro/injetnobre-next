@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
+import { withBasePath } from '@/lib/withBasePath';
 
 const BOX_TYPES = ['Estojo Clássico', 'Estojo Duplo', 'Estojo Múltiplo'] as const;
 const BOX_IMAGES: Record<string, string> = {
-  'Estojo Clássico': '/assets/Estojo individual.webp',
-  'Estojo Duplo': '/assets/Estojo Duplo.webp',
-  'Estojo Múltiplo': '/assets/Estojo Multiplo.webp',
+  'Estojo Clássico': withBasePath('/assets/Estojo individual.webp'),
+  'Estojo Duplo': withBasePath('/assets/Estojo Duplo.webp'),
+  'Estojo Múltiplo': withBasePath('/assets/Estojo Multiplo.webp'),
 };
 
 const PRICE_PER_UNIT = 2.50;
@@ -97,7 +98,7 @@ export default function PriceCalculator() {
         <div className="calculo-right">
           <div className="calculo-right-elements">
             <Image
-              src="/assets/Img-calculo.png"
+              src={withBasePath('/assets/Img-calculo.png')}
               alt="Imagem da calculadora"
               width={300}
               height={300}

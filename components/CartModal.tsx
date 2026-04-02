@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
+import { withBasePath } from '@/lib/withBasePath';
 
 function formatBRL(value: number) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -194,7 +195,7 @@ export default function CartModal() {
                     {item.image ? (
                       <Image
                         className="cart-item-image"
-                        src={item.image}
+                        src={withBasePath(item.image)}
                         alt={item.imageAlt || item.name}
                         width={64}
                         height={64}

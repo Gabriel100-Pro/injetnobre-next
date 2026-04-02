@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { withBasePath } from '@/lib/withBasePath';
 
 export default function Footer() {
   return (
@@ -8,7 +9,7 @@ export default function Footer() {
         <div className="title-footer">
           <div className="img-footer">
             <Image
-              src="/assets/Logo Oficial -IN.png"
+              src={withBasePath('/assets/Logo Oficial -IN.png')}
               alt="Logo InjetNobre"
               width={50}
               height={50}

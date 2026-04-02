@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { withBasePath } from '@/lib/withBasePath';
 
 export default function WhyChooseUs() {
   return (
@@ -17,7 +18,7 @@ export default function WhyChooseUs() {
         <div className="box-3">
           <div className="img-card">
             <Image
-              src="/assets/Relógio.webp"
+              src={withBasePath('/assets/Relógio.webp')}
               alt="Relógio"
               width={150}
               height={150}
@@ -35,7 +36,7 @@ export default function WhyChooseUs() {
         <div className="box-3">
           <div className="img-card">
             <Image
-              src="/assets/Img-Preço.webp"
+              src={withBasePath('/assets/Img-Preço.webp')}
               alt="Preço"
               width={150}
               height={150}
@@ -53,7 +54,7 @@ export default function WhyChooseUs() {
         <div className="box-3">
           <div className="img-card">
             <Image
-              src="/assets/100 + Unidades minimas.png"
+              src={withBasePath('/assets/100 + Unidades minimas.png')}
               alt="100+ unidades"
               width={150}
               height={150}

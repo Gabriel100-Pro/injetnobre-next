@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
+import { withBasePath } from '@/lib/withBasePath';
 
 export default function HeroSection() {
   const { addItem } = useCart();
@@ -12,7 +13,7 @@ export default function HeroSection() {
       name: 'Estojo Clássico',
       price: 2.50,
       quantity: 1,
-      image: '/assets/Estojo individual.webp',
+      image: withBasePath('/assets/Estojo individual.webp'),
       imageAlt: 'Estojo Clássico',
     });
   }
@@ -45,7 +46,7 @@ export default function HeroSection() {
         </div>
       </div>
       <Image
-        src="/assets/img - inicio.webp"
+        src={withBasePath('/assets/img - inicio.webp')}
         alt="Estojo InjetNobre"
         width={400}
         height={400}

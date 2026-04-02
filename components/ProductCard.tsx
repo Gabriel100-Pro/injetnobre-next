@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
+import { withBasePath } from '@/lib/withBasePath';
 
 interface ProductCardProps {
   id: string;
@@ -34,7 +35,7 @@ export default function ProductCard({ id, name, description, price, image, image
   return (
     <div className="box-1">
       <Image
-        src={image}
+        src={withBasePath(image)}
         alt={imageAlt}
         width={200}
         height={200}

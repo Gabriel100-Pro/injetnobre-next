@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
+import { withBasePath } from '@/lib/withBasePath';
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -37,7 +38,7 @@ export default function Header() {
       {/* Logo */}
       <div className="logo">
         <Image
-          src="/assets/Logo Oficial -IN.png"
+          src={withBasePath('/assets/Logo Oficial -IN.png')}
           alt="Logo InjetNobre"
           width={50}
           height={50}

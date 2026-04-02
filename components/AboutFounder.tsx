@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { withBasePath } from '@/lib/withBasePath';
 
 export default function AboutFounder() {
   return (
@@ -10,7 +11,7 @@ export default function AboutFounder() {
       <main className="fundador">
         <div className="container-left-2">
           <Image
-            src="/assets/Img - do - Pai.png"
+            src={withBasePath('/assets/Img - do - Pai.png')}
             alt="José Carlos de Almeida"
             width={300}
             height={400}

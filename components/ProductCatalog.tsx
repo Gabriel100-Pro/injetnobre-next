@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import ProductCard from './ProductCard';
+import { withBasePath } from '@/lib/withBasePath';
 
 const PRODUCTS = [
   {
@@ -9,7 +10,7 @@ const PRODUCTS = [
     name: 'Estojo Clássico',
     description: 'Perfeito para um relógio. Acabamento em couro sintético premium.',
     price: 2.50,
-    image: '/assets/Estojo individual.webp',
+    image: withBasePath('/assets/Estojo individual.webp'),
     imageAlt: 'Estojo Clássico',
   },
   {
@@ -17,7 +18,7 @@ const PRODUCTS = [
     name: 'Estojo Duplo',
     description: 'Capacidade para dois relógios. Design elegante e compacto.',
     price: 2.50,
-    image: '/assets/Estojo Duplo.webp',
+    image: withBasePath('/assets/Estojo Duplo.webp'),
     imageAlt: 'Estojo Duplo',
   },
   {
@@ -25,7 +26,7 @@ const PRODUCTS = [
     name: 'Estojo Múltiplo',
     description: 'Para colecionadores. Comporta até 6 relógios com segurança.',
     price: 2.50,
-    image: '/assets/Estojo Multiplo.webp',
+    image: withBasePath('/assets/Estojo Multiplo.webp'),
     imageAlt: 'Estojo Múltiplo',
   },
   {
@@ -33,7 +34,7 @@ const PRODUCTS = [
     name: 'Estojo Premium Luxo',
     description: 'Acabamento em veludo macio com forro em seda. Para os relógios mais valiosos.',
     price: 3.50,
-    image: '/assets/Estojo individual.webp',
+    image: withBasePath('/assets/Estojo individual.webp'),
     imageAlt: 'Estojo Premium Luxo',
   },
   {
@@ -41,7 +42,7 @@ const PRODUCTS = [
     name: 'Estojo Viagem',
     description: 'Proteção total com suporte ajustável. Ideal para transportar durante viagens.',
     price: 3.00,
-    image: '/assets/Estojo Duplo.webp',
+    image: withBasePath('/assets/Estojo Duplo.webp'),
     imageAlt: 'Estojo Viagem',
   },
 ];
