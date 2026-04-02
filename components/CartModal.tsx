@@ -10,6 +10,8 @@ function formatBRL(value: number) {
 
 type PaymentMethod = 'credit' | 'debit' | 'pix';
 
+const paymentsEndpoint = process.env.NEXT_PUBLIC_PAYMENTS_API_URL || '/api/payments';
+
 export default function CartModal() {
   const { items, totalItems, totalPrice, removeItem, clearCart, isOpen, closeCart } = useCart();
   const [confirmClear, setConfirmClear] = useState(false);
@@ -46,11 +48,16 @@ export default function CartModal() {
   async function createCheckout(method: PaymentMethod) {
     if (!validateEmail()) return null;
 
+    if (typeof window !== 'undefined' && window.location.hostname.includes('github.io') && paymentsEndpoint === '/api/payments') {
+      setPaymentMessage('No GitHub Pages, configure NEXT_PUBLIC_PAYMENTS_API_URL com a URL do seu backend para processar pagamentos.');
+      return null;
+    }
+
     setIsProcessing(true);
     setPaymentMessage('Processando pagamento...');
 
     try {
-      const response = await fetch('/api/payments', {
+      const response = await fetch(paymentsEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

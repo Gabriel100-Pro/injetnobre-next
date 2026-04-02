@@ -33,6 +33,26 @@ Fluxo implementado no carrinho:
 
 Observacao: para testes completos, use contas e dados de teste do proprio Mercado Pago.
 
+## Deploy no GitHub Pages
+
+O GitHub Pages hospeda apenas arquivos estaticos. Nesse modo, o Next gera o `index.html` automaticamente na pasta `out/`.
+
+Importante para este projeto:
+- O endpoint interno `app/api/payments/route.ts` nao roda no GitHub Pages.
+- Para pagamentos funcionarem em producao no Pages, voce precisa de um backend externo e configurar:
+	- `NEXT_PUBLIC_PAYMENTS_API_URL=https://seu-backend.com/api/payments`
+
+Este repositorio ja inclui workflow em `.github/workflows/deploy-pages.yml`.
+
+Passos:
+1. No GitHub, va em `Settings > Pages` e selecione `GitHub Actions` como source.
+2. Em `Settings > Secrets and variables > Actions`, crie o secret:
+	 - `NEXT_PUBLIC_PAYMENTS_API_URL` com a URL do backend de pagamentos.
+3. Faça push na branch `main`.
+4. O workflow vai gerar export estatico e publicar no Pages.
+
+Sem backend externo, o site abre no Pages, mas checkout (credito/debito/pix) nao processa.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
