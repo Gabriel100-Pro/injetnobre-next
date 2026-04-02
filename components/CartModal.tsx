@@ -103,7 +103,7 @@ export default function CartModal() {
     const data = await createCheckout(paymentMethod);
     if (!data?.checkoutUrl) return;
 
-    window.open(data.checkoutUrl, '_blank', 'noopener,noreferrer');
+    window.location.href = data.checkoutUrl;
     const cardTypeLabel = paymentMethod === 'credit' ? 'credito' : 'debito';
     setPaymentMessage(`Abrimos o checkout seguro do Mercado Pago para cartao de ${cardTypeLabel}.`);
   }
@@ -115,6 +115,11 @@ export default function CartModal() {
     }
 
     const data = await createCheckout('pix');
+    if (data?.checkoutUrl) {
+      window.location.href = data.checkoutUrl;
+      return;
+    }
+
     if (!data?.qrCode) return;
 
     setPixCode(data.qrCode);
