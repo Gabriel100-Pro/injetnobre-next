@@ -13,6 +13,31 @@ type PaymentMethod = 'credit' | 'debit' | 'pix';
 
 const paymentsEndpoint = process.env.NEXT_PUBLIC_PAYMENTS_API_URL || '/api/payments';
 
+function normalizeHttpUrl(candidate: string) {
+  const trimmed = candidate.trim().replace(/^['\"]|['\"]$/g, '');
+  if (!trimmed) return null;
+
+  const withProtocol = /^https?:\/\//i.test(trimmed) || trimmed.startsWith('/') ? trimmed : `https://${trimmed}`;
+
+  try {
+    if (withProtocol.startsWith('/')) {
+      return withProtocol;
+    }
+
+    const url = new URL(withProtocol);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+function getPaymentsEndpoint() {
+  const endpoint = normalizeHttpUrl(paymentsEndpoint);
+  if (!endpoint) return null;
+  return endpoint;
+}
+
 export default function CartModal() {
   const { items, totalItems, totalPrice, removeItem, clearCart, isOpen, closeCart } = useCart();
   const [confirmClear, setConfirmClear] = useState(false);
@@ -49,7 +74,13 @@ export default function CartModal() {
   async function createCheckout(method: PaymentMethod) {
     if (!validateEmail()) return null;
 
-    if (typeof window !== 'undefined' && window.location.hostname.includes('github.io') && paymentsEndpoint === '/api/payments') {
+    const endpoint = getPaymentsEndpoint();
+    if (!endpoint) {
+      setPaymentMessage('URL de pagamento invalida. Configure NEXT_PUBLIC_PAYMENTS_API_URL com um endereco valido, por exemplo: https://seu-backend.com/api/payments');
+      return null;
+    }
+
+    if (typeof window !== 'undefined' && window.location.hostname.includes('github.io') && endpoint === '/api/payments') {
       setPaymentMessage('No GitHub Pages, configure NEXT_PUBLIC_PAYMENTS_API_URL com a URL do seu backend para processar pagamentos.');
       return null;
     }
@@ -58,7 +89,7 @@ export default function CartModal() {
     setPaymentMessage('Processando pagamento...');
 
     try {
-      const response = await fetch(paymentsEndpoint, {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -111,7 +142,13 @@ export default function CartModal() {
     const data = await createCheckout(paymentMethod);
     if (!data?.checkoutUrl) return;
 
-    window.location.href = data.checkoutUrl;
+    const safeCheckoutUrl = normalizeHttpUrl(data.checkoutUrl);
+    if (!safeCheckoutUrl || safeCheckoutUrl.startsWith('/')) {
+      setPaymentMessage('Link de checkout invalido. Tente novamente em alguns instantes.');
+      return;
+    }
+
+    window.location.href = safeCheckoutUrl;
     const cardTypeLabel = paymentMethod === 'credit' ? 'credito' : 'debito';
     setPaymentMessage(`Abrimos o checkout seguro do Mercado Pago para cartao de ${cardTypeLabel}.`);
   }
@@ -124,7 +161,13 @@ export default function CartModal() {
 
     const data = await createCheckout('pix');
     if (data?.checkoutUrl) {
-      window.location.href = data.checkoutUrl;
+      const safeCheckoutUrl = normalizeHttpUrl(data.checkoutUrl);
+      if (!safeCheckoutUrl || safeCheckoutUrl.startsWith('/')) {
+        setPaymentMessage('Link de checkout Pix invalido. Tente novamente em alguns instantes.');
+        return;
+      }
+
+      window.location.href = safeCheckoutUrl;
       return;
     }
 
