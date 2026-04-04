@@ -18,6 +18,8 @@ interface CheckoutPayload {
 
 export const runtime = 'nodejs';
 
+const CORS_ORIGINS_ENV_KEYS = ['CORS_ALLOWED_ORIGINS', 'NEXT_PUBLIC_SITE_URL'] as const;
+
 const MP_TOKEN_ENV_KEYS = [
   'MP_ACCESS_TOKEN',
   'MERCADOPAGO_ACCESS_TOKEN',
@@ -50,6 +52,76 @@ function getClient() {
       timeout: 10000,
     },
   });
+}
+
+function normalizeOrigin(value: string) {
+  const trimmed = value.trim().replace(/^['\"]|['\"]$/g, '');
+  if (!trimmed) return null;
+
+  try {
+    const url = new URL(trimmed);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+    return url.origin;
+  } catch {
+    return null;
+  }
+}
+
+function getAllowedOrigins() {
+  const values: string[] = [];
+
+  for (const key of CORS_ORIGINS_ENV_KEYS) {
+    const raw = process.env[key];
+    if (!raw) continue;
+
+    values.push(...raw.split(','));
+  }
+
+  return Array.from(new Set(values.map(normalizeOrigin).filter((origin): origin is string => Boolean(origin))));
+}
+
+function buildCorsHeaders(request: Request) {
+  const requestOrigin = request.headers.get('origin');
+  const allowedOrigins = getAllowedOrigins();
+  const headers = new Headers();
+
+  let allowOrigin = '*';
+  if (requestOrigin) {
+    if (allowedOrigins.length === 0) {
+      allowOrigin = requestOrigin;
+    } else if (allowedOrigins.includes(requestOrigin)) {
+      allowOrigin = requestOrigin;
+    }
+  }
+
+  headers.set('Access-Control-Allow-Origin', allowOrigin);
+  headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  headers.set('Access-Control-Max-Age', '86400');
+  headers.set('Vary', 'Origin');
+
+  return headers;
+}
+
+function isOriginAllowed(request: Request) {
+  const requestOrigin = request.headers.get('origin');
+  if (!requestOrigin) return true;
+
+  const allowedOrigins = getAllowedOrigins();
+  if (allowedOrigins.length === 0) return true;
+
+  return allowedOrigins.includes(requestOrigin);
+}
+
+function jsonResponse(request: Request, body: unknown, init?: ResponseInit) {
+  const corsHeaders = buildCorsHeaders(request);
+  const response = Response.json(body, init);
+
+  corsHeaders.forEach((value, key) => {
+    response.headers.set(key, value);
+  });
+
+  return response;
 }
 
 function isValidPayload(payload: unknown): payload is CheckoutPayload {
@@ -140,12 +212,23 @@ function extractErrorMessage(error: unknown) {
   return 'Erro interno ao processar pagamento.';
 }
 
+export async function OPTIONS(request: Request) {
+  return new Response(null, {
+    status: 204,
+    headers: buildCorsHeaders(request),
+  });
+}
+
 export async function POST(request: Request) {
   try {
+    if (!isOriginAllowed(request)) {
+      return jsonResponse(request, { error: 'Origem nao permitida para pagamento.' }, { status: 403 });
+    }
+
     const payload = await request.json();
 
     if (!isValidPayload(payload)) {
-      return Response.json({ error: 'Dados de pagamento invalidos.' }, { status: 400 });
+      return jsonResponse(request, { error: 'Dados de pagamento invalidos.' }, { status: 400 });
     }
 
     const client = getClient();
@@ -166,7 +249,7 @@ export async function POST(request: Request) {
 
         const txData = pixResult.point_of_interaction?.transaction_data;
         if (txData?.qr_code) {
-          return Response.json({
+          return jsonResponse(request, {
             method: 'pix',
             qrCode: txData.qr_code,
             qrCodeBase64: txData?.qr_code_base64 || '',
@@ -177,7 +260,7 @@ export async function POST(request: Request) {
       }
 
       const pixPreference = await createCheckoutPreference(client, payload, 'pix');
-      return Response.json({
+      return jsonResponse(request, {
         method: 'pix',
         checkoutUrl: pixPreference.init_point,
       });
@@ -185,13 +268,13 @@ export async function POST(request: Request) {
 
     const prefResult = await createCheckoutPreference(client, payload, payload.method);
 
-    return Response.json({
+    return jsonResponse(request, {
       method: payload.method,
       checkoutUrl: prefResult.init_point,
     });
   } catch (error) {
     console.error('Erro ao processar pagamento Mercado Pago:', error);
     const message = extractErrorMessage(error);
-    return Response.json({ error: message }, { status: 500 });
+    return jsonResponse(request, { error: message }, { status: 500 });
   }
 }

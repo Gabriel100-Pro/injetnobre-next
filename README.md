@@ -24,7 +24,16 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 1. Crie o arquivo `.env.local` na raiz com base no `.env.example`.
 2. Defina `MP_ACCESS_TOKEN` com seu token de teste do Mercado Pago.
-3. Reinicie o servidor (`npm run dev`).
+3. Defina `CORS_ALLOWED_ORIGINS` com os dominios permitidos separados por virgula.
+4. Reinicie o servidor (`npm run dev`).
+
+Exemplo:
+
+```env
+MP_ACCESS_TOKEN=APP_USR-xxxx
+CORS_ALLOWED_ORIGINS=https://gabriel100-pro.github.io,https://injetnobre-next.vercel.app
+NEXT_PUBLIC_PAYMENTS_API_URL=https://injetnobre-next.vercel.app/api/payments
+```
 
 Fluxo implementado no carrinho:
 - `Cartao de credito`: abre checkout seguro do Mercado Pago com filtro para credito.
@@ -48,8 +57,11 @@ Passos:
 1. No GitHub, va em `Settings > Pages` e selecione `GitHub Actions` como source.
 2. Em `Settings > Secrets and variables > Actions`, crie o secret:
 	 - `NEXT_PUBLIC_PAYMENTS_API_URL` com a URL do backend de pagamentos.
-3. Faça push na branch `main`.
-4. O workflow vai gerar export estatico e publicar no Pages.
+3. No provider do backend (ex: Vercel), configure:
+	 - `MP_ACCESS_TOKEN`
+	 - `CORS_ALLOWED_ORIGINS` (inclua o dominio do GitHub Pages)
+4. Faça push na branch `main`.
+5. O workflow vai gerar export estatico e publicar no Pages.
 
 Sem backend externo, o site abre no Pages, mas checkout (credito/debito/pix) nao processa.
 
